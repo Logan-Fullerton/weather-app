@@ -46,7 +46,7 @@ fetchWeather:(lat,lon)=>{
             return resp.json();
         })
         .then(data=>{
-            //app.showWeather(data);
+           
             console.log(data)
         })
         .catch(console.err);
@@ -66,13 +66,18 @@ fetchWeather:(lat,lon)=>{
         })
     },
     renderWeather(data){
-        for(i=0;i<data.list.length;i+=8){
+        for(i=0;i<data.list.length;){
         let card=document.createElement('div')
         let tempEl=document.createElement('p')
-        tempEl.textContent=data.list[i].main.tempEl
+        tempEl.textContent=data.list[i++].main.temp
         card.append(tempEl)
         document.getElementById('forecastBox').append(card)
+        document.getElementById('temp').textContent='Temp: '+data.list[0].main.temp
+        document.getElementById('wind').textContent='Wind: '+data.list[0].wind.speed
+        document.getElementById('humidity').textContent='Humidity: '+data.list[0].main.humidity
         }
+       
+    
 
     }
 }
