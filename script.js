@@ -66,11 +66,13 @@ fetchWeather:(lat,lon)=>{
         })
     },
     renderWeather(data){
-        for(i=0;i<data.list.length;){
+        for(i=0;i<data.list.length;){if(i>4){return
+            }
         let card=document.createElement('div')
         let tempEl=document.createElement('p')
         tempEl.textContent=data.list[i++].main.temp
         card.append(tempEl)
+        this.preventDefault()
         document.getElementById('forecastBox').append(card)
         document.getElementById('temp').textContent='Temp: '+data.list[0].main.temp
         document.getElementById('wind').textContent='Wind: '+data.list[0].wind.speed
