@@ -1,24 +1,27 @@
-// GIVEN a weather dashboard with form inputs
-// WHEN I search for a city
-// THEN I am presented with current and future conditions for that city and that city is added to the search history
-// WHEN I view current weather conditions for that city
-// THEN I am presented with the city name, the date, an icon representation of weather conditions, the temperature, the humidity, and the wind speed
-// WHEN I view future weather conditions for that city
-// THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, the wind speed, and the humidity
-// WHEN I click on a city in the search history
-// THEN I am again presented with current and future conditions for that city
 
+const pastCities = JSON.parse (localStorage.getItem('pastCities')) || []
 const app={
-    init:()=>{
-        document.getElementById('search-btn').addEventListener('click',()=>{
+
+    init:function(){
+       document.getElementById('pastSearch').addEventListener('click',this.pastSearch)
+        document.getElementById('search-btn').addEventListener('click',function(){
             let city= document.getElementById('userInput').value;
             if(!city){
                 return 
             }
+            pastCities.push(city)
+            const btn = document.createElement('button')
+            btn.textContent=city
+            document.getElementById('pastSearch').append(btn)
+            localStorage.setItem('pastCities', JSON.stringify(pastCities))
             app.fetchCoords(city)
+           
         });
     },
-    
+    pastSearch:function(event){
+        let city=event.target.textContent
+        app.fetchCoords(city)
+    },
 fetchWeather:(lat,lon)=>{
     let key = '3f1f6cf4e4d47e3b57f26304e7165e73'
     let units = 'imperial'
@@ -29,12 +32,10 @@ fetchWeather:(lat,lon)=>{
         return resp.json();
     })
     .then(data=>{
-        //app.showWeather(data);
         console.log(data)
         app.renderWeather(data)
     })
     .catch(console.err);
-    
     },
     fetchCurrentWeather:(lat,lon)=>{
         let key = '3f1f6cf4e4d47e3b57f26304e7165e73'
@@ -46,15 +47,15 @@ fetchWeather:(lat,lon)=>{
             return resp.json();
         })
         .then(data=>{
-           
+           app.fetchCurrentWeather(data)
             console.log(data)
         })
         .catch(console.err);
-        
+        console.log(url)
         },
     fetchCoords:(city)=>{
         let key = '3f1f6cf4e4d47e3b57f26304e7165e73'
-        let url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&appid=${key}`
+        let url = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&appid=${key}`
         fetch (url)
         .then((resp)=>{
             return resp.json();
@@ -62,25 +63,35 @@ fetchWeather:(lat,lon)=>{
         .then((data)=>{
             let {lat,lon}=data[0]
             app.fetchWeather(lat,lon)
-            app.fetchCurrentWeather(lat,lon)
+           
         })
     },
     renderWeather(data){
-        for(i=0;i<data.list.length;){if(i>4){return
-            }
+        document.getElementById('forecastBox').innerHTML=''
+        for(i=0;i<data.list.length; i+=8){
         let card=document.createElement('div')
-        let tempEl=document.createElement('p')
-        tempEl.textContent=data.list[i++].main.temp
-        card.append(tempEl)
-        this.preventDefault()
+        let tempEl=document.createElement('p',)
+            tempEl.textContent="Temp: "+data.list[i].main.temp +'  F'
+        let humidityEl=document.createElement('p',)
+            humidityEl.textContent='Humidity: '+data.list[i].main.humidity+'  %'
+        let windEl=document.createElement('p',)
+            windEl.textContent='Wind: '+data.list[i].wind.speed+'  mph'
+            card.append(tempEl,humidityEl,windEl)
+            card.classList.add('card')
         document.getElementById('forecastBox').append(card)
-        document.getElementById('temp').textContent='Temp: '+data.list[0].main.temp
-        document.getElementById('wind').textContent='Wind: '+data.list[0].wind.speed
-        document.getElementById('humidity').textContent='Humidity: '+data.list[0].main.humidity
+        document.getElementById('temp').textContent='Temp: '+data.list[0].main.temp+ '  F'
+        document.getElementById('wind').textContent='Wind: '+data.list[0].wind.speed+'  mph'
+        document.getElementById('humidity').textContent='Humidity: '+data.list[0].main.humidity+'  %'
+        document.getElementById('city').textContent=data.city.name
         }
-       
-    
-
+    },
+    renderButtons(){
+        for(i=0;i<pastCities.length;i++){
+            let btn = document.createElement('button')
+            btn.textContent=pastCities[i]
+            document.getElementById('pastSearch').append(btn)
+        }
     }
 }
 app.init()
+app.renderButtons()
